@@ -34,7 +34,10 @@ All SQL files are located in the `sql/` folder:
 ## Usage
 - You can use the provided stored procedures to insert purchase and sale details efficiently.
 - The views allow you to easily query and report on purchases, sales, inventory, and customer profiles.
-- The EER diagram (`sql/EER-Diagram.png`) provides a visual overview of the database structure.
+
+## EER Diagram
+<img width="1758" height="1147" alt="image" src="https://github.com/user-attachments/assets/b98f6ad2-8beb-409d-a3c3-c0b52260bcf7" />
+
 
 ## Notes
 - All scripts are written for MySQL.
