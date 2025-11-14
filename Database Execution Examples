@@ -1,0 +1,24 @@
+
+## Database Execution Examples
+
+### Views
+
+<img width="1758" height="1147" alt="image" src="https://github.com/taraborelid/pharmacy-SQL/blob/main/sql/assets/1.png?raw=true" />
+
+<img width="1758" height="1147" alt="image" src="https://github.com/taraborelid/pharmacy-SQL/blob/main/sql/assets/2.png?raw=true" />
+
+### Stored Procedure - Inserts to purchase - purchase_details - pharmacy_stock
+
+<img width="1758" height="1147" alt="image" src="https://github.com/taraborelid/pharmacy-SQL/blob/main/sql/assets/insertpurchase.png?raw=true" />
+
+<img width="1758" height="1147" alt="image" src="https://github.com/taraborelid/pharmacy-SQL/blob/main/sql/assets/insertstock.png?raw=true" />
+
+<img width="1758" height="1147" alt="image" src="https://github.com/taraborelid/pharmacy-SQL/blob/main/sql/assets/purchasedetail.png?raw=true" />
+
+### Stored Procedure - Inserts to sale - sale_details - decrement pharmacy_stock
+
+<img width="1758" height="1147" alt="image" src="https://github.com/taraborelid/pharmacy-SQL/blob/main/sql/assets/sales.png?raw=true" />
+
+<img width="1758" height="1147" alt="image" src="https://github.com/taraborelid/pharmacy-SQL/blob/main/sql/assets/sales1.png?raw=true" />
+
+<img width="1758" height="1147" alt="image" src="https://github.com/taraborelid/pharmacy-SQL/blob/main/sql/assets/salesdecrementstock.png?raw=true" />
