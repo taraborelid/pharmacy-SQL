@@ -6,7 +6,7 @@ This repository contains the SQL scripts and resources for a pharmacy management
 
 To see screenshots of the queries, views, and stored procedures in action, check:
 
-[Database Execution Examples](./sql/DatabaseExecutionExamples.md)
+[Database Execution Examples](./DatabaseExecutionExamples.md)
 
 ## Folder Structure
 
