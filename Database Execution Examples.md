@@ -5,7 +5,6 @@
 
 <img width="1758" alt="image" src="https://raw.githubusercontent.com/taraborelid/pharmacy-SQL/main/sql/assets/1.png" />
 
-
 <img width="1758" height="1147" alt="image" src="https://github.com/taraborelid/pharmacy-SQL/blob/main/sql/assets/2.png?raw=true" />
 
 ### Stored Procedure - Inserts to purchase - purchase_details - pharmacy_stock
