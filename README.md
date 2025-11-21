@@ -106,7 +106,21 @@ CALL insert_sale_details(
 This procedure ensures that all sales are recorded consistently and that inventory is updated automatically.
 
 ## EER Diagram
-<img width="1758" height="1147" alt="image" src="https://github.com/user-attachments/assets/b98f6ad2-8beb-409d-a3c3-c0b52260bcf7" />
+![EER Diagram](sql/EER-Diagram.png)
+
+## Assets
+An `assets/` directory (e.g. `sql/assets/` or a top-level `assets/`) is intended for storing diagrams and future visual documentation (flow charts, sequence diagrams, etc.). Currently the diagram file is located at `sql/EER-Diagram.png`. If you prefer a cleaner structure you can move it to `sql/assets/EER-Diagram.png` and update the path above accordingly:
+
+```markdown
+![EER Diagram](sql/assets/EER-Diagram.png)
+```
+
+Recommended naming for future images:
+- `eer-diagram.png`
+- `purchase-flow.png`
+- `sale-procedure-sequence.png`
+
+Keep images under ~1 MB for fast repository browsing.
 
 
 ## Notes
