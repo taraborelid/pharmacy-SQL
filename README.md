@@ -2,6 +2,12 @@
 
 This repository contains the SQL scripts and resources for a pharmacy management database. The project includes schema definitions, seed data, views, and stored procedures for managing purchases, sales, inventory, and customer information.
 
+### SQL Queries and Executions
+
+To see screenshots of the queries, views, and stored procedures in action, check:
+
+[Database Execution Examples](./DatabaseExecutionExamples.md)
+
 ## Folder Structure
 
 All SQL files are located in the `sql/` folder:
