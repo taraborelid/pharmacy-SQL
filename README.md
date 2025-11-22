@@ -44,20 +44,6 @@ All SQL files are located in the `sql/` folder:
 ## EER Diagram
 ![EER Diagram](sql/EER-Diagram.png)
 
-## Assets
-An `assets/` directory (e.g. `sql/assets/` or a top-level `assets/`) is intended for storing diagrams and future visual documentation (flow charts, sequence diagrams, etc.). Currently the diagram file is located at `sql/EER-Diagram.png`. If you prefer a cleaner structure you can move it to `sql/assets/EER-Diagram.png` and update the path above accordingly:
-
-```markdown
-![EER Diagram](sql/assets/EER-Diagram.png)
-```
-
-Recommended naming for future images:
-- `eer-diagram.png`
-- `purchase-flow.png`
-- `sale-procedure-sequence.png`
-
-Keep images under ~1 MB for fast repository browsing.
-
 
 ## Notes
 - All scripts are written for MySQL.
