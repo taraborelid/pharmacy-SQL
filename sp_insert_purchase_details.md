@@ -48,7 +48,7 @@ CALL insert_purchase_detail(
 );
 ```
 
-![Purchase execution](./sql/assets/insert_purchase_details.sql-25-29.png)
+![Purchase execution](./sql/assets/insert_purchases_sp.png)
 
 **What happens internally:**
 
