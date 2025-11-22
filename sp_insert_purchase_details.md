@@ -24,7 +24,7 @@ With just these 4 inputs, the procedure performs complex multi-table operations 
 
 Before executing the purchase, let's examine the current pharmacy stock. The screenshot below shows the initial quantities for the drugs we're about to purchase:
 
-![Stock before purchase]<img src="./sql/assets/pharmacy_stock_before_purchase.png" alt="Stock before purchase" width="900">
+![Stock before purchase](./sql/assets/pharmacy_stock_before_purchase.png)
 
 
 **What we see:**
