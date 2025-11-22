@@ -35,7 +35,7 @@ These quantities will be updated after the purchase is processed.
 
 ---
 
-#### Step 2: Executing the Procedure - Simultaneous Multi-Table Insert
+#### Step 2: Simultaneous Multi-Table Insert
 
 Now we execute the stored procedure with our purchase data:
 
@@ -48,7 +48,33 @@ CALL insert_purchase_detail(
 );
 ```
 
-![Purchase execution](./sql/assets/insert_purchase_details.sql-25-29.png)
+With this **single call**, the procedure automatically inserts data into **two tables simultaneously**: `purchase_detail` (line items) and `purchase` (header).
+
+![Purchase detail records - showing all inserted lines](./sql/assets/insert_purchases_sp.png)
+
+**What the screenshot shows - `purchase_detail` table:**
+The procedure created **3 detailed line items**, one for each drug:
+
+| Line | Drug | Quantity | Unit Price | Total Price | Purchase ID | Branded Drug ID |
+|------|------|----------|------------|-------------|-------------|-----------------|
+| 1 | Tylenol | 40 | $3,200 | $128,000 | 32 | 1 |
+| 2 | Advil | 50 | $4,500 | $225,000 | 32 | 2 |
+| 3 | Brufen | 100 | $3,800 | $380,000 | 32 | 3 |
+
+**Key observations:**
+- All 3 rows share the same `purchase_id = 32` (links them to the same purchase)
+- Unit prices are retrieved from `branded_drug` table
+- Total prices are calculated automatically: `quantity × unit_price`
+- Each row includes `branded_drug_id` as foreign key
+- Timestamps (`created_at`, `updated_at`) are auto-generated
+
+---
+
+#### Step 3: Purchase Header Created
+
+Simultaneously with the details, the procedure also created the purchase header in the `purchase` table:
+
+![Purchase header - showing the generated purchase record](./sql/assets/purchase_after.png)
 
 **What the screenshot shows - `purchase` table:**
 
@@ -78,39 +104,23 @@ CALL insert_purchase_detail(
 3. **Detail Loop** (iterates 3 times for our 3 drugs)
    - Parses first drug name ('Tylenol') and quantity (40) from comma-separated lists
    - Looks up drug details: unit price, presentation, category, expiration
-   - Calculates line total: `40 × $3200 = $128,000`
-   - Inserts row into `purchase_detail`
-   - Repeats for 'Advil' and 'Brufen'
+   - Calculates line total: `40 × $3,200 = $128,000`
+   - Inserts row into `purchase_detail` with `purchase_id = 32`
+   - Repeats for 'Advil' (50 units) and 'Brufen' (100 units)
 
----
+4. **Total Calculation**
+   - Calls `calculate_total_purchase(32)` which sums all detail line totals
+   - Updates `purchase.total = $733,000`
 
-#### Step 3: Purchase Detail Records Created
-
-After processing all three drugs, we can see the detailed line items in `purchase_detail`:
-
-![Purchase detail records](./sql/assets/insert_purchase_details.sql.png)
-
-**What this shows:**
-- **3 new rows** inserted into `purchase_detail` table
-- Each row links to the same `purchase_id` (32 in this example)
-- **Quantities**: 40, 50, 100 (as specified in our input)
-- **Unit prices**: Retrieved from `branded_drug` table for each drug
-- **Total prices**: Calculated per line (quantity × unit_price)
-- **Branded_drug_id**: Foreign keys linking to specific drugs
-
-The procedure automatically calculated:
-- Line 1: 40 × $3,200 = $128,000 (Tylenol)
-- Line 2: 50 × $4,500 = $225,000 (Advil)
-- Line 3: 100 × $3,800 = $380,000 (Brufen)
+**This demonstrates the power of the stored procedure**: with **4 parameters**, it orchestrates inserts into `purchase` (header), `purchase_detail` (3 line items), and updates to `pharmacy_stock`—all atomically
 
 ---
 
 #### Step 4: Stock Updated Automatically
 
-While inserting purchase details, the procedure **simultaneously updates** `pharmacy_stock` using `ON DUPLICATE KEY UPDATE`:
+As part of the same transaction that created the purchase header and details, the procedure also **updates** `pharmacy_stock` using `ON DUPLICATE KEY UPDATE`:
 
-![Purchase detail records](./sql/assets/insert_purchase_details.sql.png)
-![Stock after purchase](./sql/assets/purchase_after.png)
+![Stock after purchase](./sql/assets/stock_after_purchase.png)
 
 **What changed:**
 - **Tylenol**: 130 → **170 units** (+40 purchased)
