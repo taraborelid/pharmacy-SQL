@@ -4,7 +4,7 @@ This repository contains the SQL scripts and resources for a pharmacy management
 
 ## Stored Procedure Execution Examples
 
-- [Purchase Process - `insert_purchase_detail`](./DatabaseExecutionExamples.md) - See how purchases are registered with automatic stock updates
+- [Purchase Process - `insert_purchase_detail`](./sp_insert_purchase_details.md) - See how purchases are registered with automatic stock updates
 - [Sales Process - `insert_sale_details`](./sp_insert_sale_details.md) - See how sales are processed with prescription validation and inventory deduction
 
 ## Folder Structure
