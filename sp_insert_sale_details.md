@@ -23,7 +23,7 @@ With these 6 inputs, the procedure handles prescription validation, stock deduct
 
 ---
 
-#### Step 1: Executing the Sale
+#### Step 1: Executing the Sale - Simultaneous Multi-Table Insert
 
 Let's execute a sale transaction with both prescription and over-the-counter (OTC) items:
 
@@ -38,18 +38,50 @@ CALL insert_sale_details(
 );
 ```
 
-![Sale execution with parameters](./sql/assets/insert_customer_sales_details.png)
+With this **single call**, the procedure automatically inserts data into **two tables simultaneously**: `sale` (header) and `sale_detail` (line items), while also validating prescriptions and checking stock availability.
 
-**What we see in the screenshot:**
-- **Parameters clearly labeled** showing the input structure
-- **i_invoice_number**: 'FV-2025-07'
-- **i_customer_id**: 2 (must exist in customer table)
-- **i_staff_id**: 1 (must exist in staff table)
-- **i_names**: 'Tylenol, Advil, Brufen' (3 drugs)
-- **i_quantity**: '10, 8, 12' (matching quantities)
-- **i_prescriptions**: '1, null, 3' (Tylenol req. prescription 1, Advil is OTC, Brufen req. prescription 3)
+![Sale detail records - showing all inserted lines](./sql/assets/insert_customer_sales_details.png)
 
-**What happens internally:**
+**What the screenshot shows - `sale_detail` table:**
+The procedure created **3 detailed line items**, one for each drug:
+
+| Line | Drug | Quantity | Unit Price | Final Price | Prescription ID | Sale ID | Pharmacy Stock ID |
+|------|------|----------|------------|-------------|-----------------|---------|-------------------|
+| 1 | Tylenol | 10 | $872.00 | $8,720 | 1 (R-002) | 14 | 1 |
+| 2 | Advil | 8 | $445.00 | $3,560 | NULL (OTC) | 14 | 2 |
+| 3 | Brufen | 12 | $458.00 | $5,176 | 3 (R-015) | 14 | 3 |
+
+**Key observations:**
+- All 3 rows share the same `sale_id = 14` (links them to the same sale)
+- Unit prices retrieved from `pharmacy_stock` (retail prices with 21% markup)
+- Final prices calculated automatically: `quantity × unit_price`
+- **Prescription handling**: Row 2 has NULL (OTC), Rows 1 & 3 have prescription IDs
+- `pharmacy_stock_id` links to inventory for deduction
+- Timestamps auto-generated
+
+---
+
+#### Step 2: Sale Header Created
+
+Simultaneously with the details, the procedure also created the sale header in the `sale` table:
+
+![Sale header - showing the generated sale record](./sql/assets/insert_customer_sales.png)
+
+**What the screenshot shows - `sale` table:**
+
+| Sale ID | Invoice Number | Total Amount | Customer ID | Staff ID | Created At | Updated At |
+|---------|----------------|--------------|-------------|----------|------------|------------|
+| 14 | FV-2025-07 | $17,456.00 | 2 | 1 | 2025-11-21 20:00:37 | 2025-11-21 20:00:37 |
+
+**Key observations:**
+- **Sale ID 14** is the same ID referenced by all detail rows
+- **Invoice Number**: 'FV-2025-07' (unique identifier)
+- **Total Amount**: $17,456.00 (automatically calculated as sum of all line totals: $8,720 + $3,560 + $5,176)
+- **Customer ID**: 2 (must exist in customer table)
+- **Staff ID**: 1 (staff member who processed the sale)
+- **Timestamps**: Automatically recorded when the transaction commits
+
+**How it works internally:**
 
 1. **Validation Phase**
    - Confirms customer ID 2 exists in `customer` table
@@ -58,58 +90,39 @@ CALL insert_sale_details(
    - Validates prescription IDs 1 and 3 exist in `prescription` table
    - Confirms 'null' values are treated as OTC (no prescription required)
 
-2. **Transaction Begins**
+2. **Header Insert First**
    - Creates header in `sale` table with invoice 'FV-2025-07'
-   - Sets initial `total_amount = 0` (calculated later)
-   - Captures `sale_id` for detail records
+   - Sets initial `total_amount = 0` (will calculate after details)
+   - Captures `sale_id` using `LAST_INSERT_ID()` → returns 14
 
-3. **Inventory Locking**
-   - Uses `SELECT ... FOR UPDATE` to lock stock rows
-   - Prevents concurrent sales from overselling inventory
-   - Critical for transaction safety
+3. **Detail Loop with Stock Validation** (iterates 3 times for our 3 drugs)
+   - Uses `SELECT ... FOR UPDATE` to lock stock rows (prevents overselling)
+   - Parses first drug name ('Tylenol') and quantity (10) from comma-separated lists
+   - Validates stock availability: current stock must be ≥ requested quantity
+   - Retrieves unit price from `pharmacy_stock`
+   - Validates prescription ID (if not 'null')
+   - Calculates final price: `10 × $872.00 = $8,720`
+   - Inserts row into `sale_detail` with `sale_id = 14`
+   - **Deducts inventory**: Updates `pharmacy_stock.quantity = quantity - 10`
+   - Repeats for 'Advil' (8 units, OTC) and 'Brufen' (12 units, prescription 3)
 
----
+4. **Total Calculation**
+   - Calls `calculate_total_sale(14)` which sums all detail line totals
+   - Updates `sale.total_amount = $17,456.00`
 
-#### Step 2: Sale Detail Records Created
+**Critical difference from purchases:**
+- **Prescription validation**: Ensures controlled drugs have valid prescriptions
+- **Stock pre-check**: Prevents selling more than available (no negative inventory)
+- **Concurrent sale protection**: `FOR UPDATE` locks rows during transaction
+- **Immediate deduction**: Stock reduced as each line is processed
 
-After processing each drug, the procedure inserts line items into `sale_detail`:
-
-![Sale detail records](./sql/assets/insert_customer_sales.png)
-
-**What this shows:**
-- **3 new rows** in `sale_detail` table for this sale
-- Each row links to `sale_id = 14` (FV-2025-07)
-- **Quantities**: 10, 8, 12 (as specified)
-- **Unit prices**: Retrieved from `pharmacy_stock` (retail prices with tax markup)
-- **Final prices**: Calculated per line (quantity × unit_price)
-- **Prescription IDs**: 
-  - Row 1: prescription_id = 1 (Tylenol)
-  - Row 2: prescription_id = NULL (Advil - OTC)
-  - Row 3: prescription_id = 3 (Brufen)
-- **pharmacy_stock_id**: Links to specific inventory records
-
-**Calculations performed:**
-- Line 1: 10 × $872.00 = $8,720 (Tylenol with prescription 1)
-- Line 2: 8 × $445.00 = $3,560 (Advil - no prescription needed)
-- Line 3: 12 × $458.00 = $5,176 (Brufen with prescription 3)
-
-**Key difference from purchase:**
-In sales, the procedure **validates stock sufficiency** before insertion:
-
-```sql
-IF v_current_stock < quantity THEN
-    SET error_message = CONCAT('Insufficient stock for ', name);
-    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = error_message;
-END IF;
-```
-
-This prevents selling more than available inventory.
+**This demonstrates the power of the stored procedure**: with **6 parameters**, it orchestrates prescription validation, inventory checks, multi-table inserts, and stock deductions—all atomically.
 
 ---
 
 #### Step 3: Stock Automatically Deducted
 
-While inserting sale details, inventory is **reduced** in `pharmacy_stock`:
+As part of the same transaction that created the sale header and details, the procedure also **reduced** inventory in `pharmacy_stock`:
 
 ![Stock after sale](./sql/assets/stock_after_sale.png)
 
