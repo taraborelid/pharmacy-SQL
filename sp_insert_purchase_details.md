@@ -75,8 +75,6 @@ CALL insert_purchase_detail(
 
 After processing all three drugs, we can see the detailed line items in `purchase_detail`:
 
-![Purchase detail records](./sql/assets/insert_purchase_details.sql.png)
-
 **What this shows:**
 - **3 new rows** inserted into `purchase_detail` table
 - Each row links to the same `purchase_id` (32 in this example)
@@ -96,7 +94,8 @@ The procedure automatically calculated:
 
 While inserting purchase details, the procedure **simultaneously updates** `pharmacy_stock` using `ON DUPLICATE KEY UPDATE`:
 
-![Stock after purchase](./sql/assets/stock_after_purchase.png)
+![Purchase detail records](./sql/assets/insert_purchase_details.sql.png)
+![Stock after purchase](./sql/assets/purchase_after.png)
 
 **What changed:**
 - **Tylenol**: 130 → **170 units** (+40 purchased)
